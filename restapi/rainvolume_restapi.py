@@ -1,5 +1,4 @@
-# package: restapi
-# rainvolume_restapi.py
+# restapi/rainvolume_restapi.py
 
 from flask import request, jsonify
 from flask_smorest import Blueprint, abort
@@ -28,7 +27,13 @@ class RainVolumeCollectorResource(MethodView):
             this_year=data.get('this_year'),
             past_span=data.get('past_span')
         )
-        if not all([rain_collector.place, rain_collector.lat, rain_collector.lon, rain_collector.this_year, rain_collector.past_span]):
+        if not all([
+            rain_collector.place, 
+            rain_collector.lat, 
+            rain_collector.lon, 
+            rain_collector.this_year, 
+            rain_collector.past_span
+        ]):
             abort(400, description="Missing necessary rain volume data")
         try:
             rain_collector.collect_rain_volumes()
@@ -54,7 +59,13 @@ class RainVolumeAnalyzerResource(MethodView):
             day_span=data.get('day_span'),
             rain_volume_lists=data.get('rain_volume_lists')
         )
-        if not all([rain_analyzer.place, rain_analyzer.this_year, rain_analyzer.past_span, rain_analyzer.day_span, rain_analyzer.rain_volume_lists]):
+        if not all([
+            rain_analyzer.place, 
+            rain_analyzer.this_year, 
+            rain_analyzer.past_span, 
+            rain_analyzer.day_span, 
+            rain_analyzer.rain_volume_lists
+        ]):
             abort(400, description="Missing necessary rain volume data")
         try:
             rain_analyzer.calculate_rain_volume_probabilities()

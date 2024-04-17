@@ -1,5 +1,4 @@
-# package: data_collector
-# temperature_collectors.py
+# data_collector/temperature_collectors.py
 
 import requests
 from typing import List, Any

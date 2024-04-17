@@ -1,5 +1,4 @@
-# package: data_analyzer
-# recommend_analyzer.py
+# data_analyzer/recommend_analyzer.py
 
 from typing import List, Dict
 from dataclasses import asdict
@@ -61,13 +60,16 @@ class RecommendAnalyzer:
         recommend_index_groups = self.group_recommend_index(recommend_index)
         start_of_year: datetime.date = datetime.date(self.this_year, 1, 1)
         for group in recommend_index_groups:
+            
             start_day_index: int = group[0]
+            
             start_day_date: datetime.date = start_of_year + datetime.timedelta(days=start_day_index)
             start_day_date_str: str = start_day_date.strftime("%y/%m/%d")
             end_day_index: int = group[-1] + self.day_span
             end_day_date: datetime.date = start_of_year + datetime.timedelta(days=end_day_index)
             end_day_date_str: str = end_day_date.strftime("%y/%m/%d")
             self.recommend_date.append((start_day_date_str, end_day_date_str))
+            
             rain_probability_dict_start = self.rain_volume_probabilities[str(start_day_index)]
             temperature_probability_dict_start = self.temperature_probabilities[str(start_day_index)]
             rain_probability_dict_end = self.rain_volume_probabilities[str(end_day_index - self.day_span)]

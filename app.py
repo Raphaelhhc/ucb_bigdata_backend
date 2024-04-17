@@ -6,13 +6,11 @@ from flask_smorest import Api
 from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
+import certifi
 
 from restapi.rainvolume_restapi import blp_rainvolumecollector, blp_rainvolumeanalyzer
 from restapi.temperature_restapi import blp_temperaturecollector, blp_temperatureanalyzer
 from restapi.recommend_restapi import blp_recommend
-####################
-from restapi.recommend_restapi import blp_test
-####################
 
 load_dotenv()
 
@@ -28,7 +26,7 @@ app.config['OPENAPI_JSON_PATH'] = 'api-spec.json'
 app.config['OPENAPI_SWAGGER_UI_PATH'] = '/swagger'
 app.config['OPENAPI_SWAGGER_UI_URL'] = 'https://cdn.jsdelivr.net/npm/swagger-ui-dist/'
 
-app.db = MongoClient(app.config['MONGODB_URI']).WeatherPredictor
+app.db = MongoClient(app.config['MONGODB_URI'], tlsCAFile=certifi.where()).WeatherPredictor
 api = Api(app)
 
 api.register_blueprint(blp_rainvolumecollector)
@@ -36,9 +34,7 @@ api.register_blueprint(blp_rainvolumeanalyzer)
 api.register_blueprint(blp_temperaturecollector)
 api.register_blueprint(blp_temperatureanalyzer)
 api.register_blueprint(blp_recommend)
-####################
-api.register_blueprint(blp_test)
-####################
+
 
 if __name__ == '__main__':
     app.run(debug=True)

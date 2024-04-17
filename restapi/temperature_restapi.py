@@ -1,5 +1,4 @@
-# package: restapi
-# temperature_restapi.py
+# restapi/temperature_restapi.py
 
 from flask import request, jsonify
 from flask_smorest import Blueprint, abort
@@ -28,7 +27,13 @@ class TemperatureCollectorResource(MethodView):
             this_year=data.get('this_year'),
             past_span=data.get('past_span')
         )
-        if not all([temp_collector.place, temp_collector.lat, temp_collector.lon, temp_collector.this_year, temp_collector.past_span]):
+        if not all([
+            temp_collector.place, 
+            temp_collector.lat, 
+            temp_collector.lon, 
+            temp_collector.this_year, 
+            temp_collector.past_span
+        ]):
             abort(400, description="Missing necessary temperature data")
         try:
             temp_collector.collect_temperatures()
@@ -53,7 +58,13 @@ class TemperatureAnalyzerResource(MethodView):
             day_span=data.get('day_span'),
             temperature_lists=data.get('temperature_lists')
         )
-        if not all([temp_analyzer.place, temp_analyzer.this_year, temp_analyzer.past_span, temp_analyzer.day_span, temp_analyzer.temperature_lists]):
+        if not all([
+            temp_analyzer.place, 
+            temp_analyzer.this_year, 
+            temp_analyzer.past_span, 
+            temp_analyzer.day_span, 
+            temp_analyzer.temperature_lists
+        ]):
             abort(400, description="Missing necessary temperature data")
         try:
             temp_analyzer.calculate_temperature_probabilities()

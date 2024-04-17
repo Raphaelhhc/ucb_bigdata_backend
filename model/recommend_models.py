@@ -1,5 +1,4 @@
-# package: model
-# recommend_models.py
+# model/recommend_models.py
 
 from dataclasses import dataclass, field
 

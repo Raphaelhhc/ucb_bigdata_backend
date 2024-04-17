@@ -1,5 +1,4 @@
-# package: model
-# rainvolume_models.py
+# model/rainvolume_models.py
 
 from dataclasses import dataclass, field
 

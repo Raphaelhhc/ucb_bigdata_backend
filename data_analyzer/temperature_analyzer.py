@@ -1,5 +1,4 @@
-# package: data_analyzer
-# temperature_analyzer.py
+# data_analyzer/temperature_analyzer.py
 
 from typing import List, Dict
 from dataclasses import asdict

@@ -1,5 +1,4 @@
-# package: model
-# temperature_models.py
+# model/temperature_models.py
 
 from dataclasses import dataclass, field
 
