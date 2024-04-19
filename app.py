@@ -14,6 +14,9 @@ from restapi.rainvolume_restapi import blp_rainvolumecollector, blp_rainvolumean
 from restapi.temperature_restapi import blp_temperaturecollector, blp_temperatureanalyzer
 from restapi.recommend_restapi import blp_recommend
 
+if os.getenv('RUN_RABBITMQ', 'False') == 'True':
+    from rabbitmq.rabbitmq_manager import RabbitMQManager
+
 load_dotenv()
 
 # app initialization
@@ -34,8 +37,9 @@ app.config['OPENAPI_SWAGGER_UI_URL'] = 'https://cdn.jsdelivr.net/npm/swagger-ui-
 app.db = MongoClient(app.config['MONGODB_URI'], tlsCAFile=certifi.where()).WeatherPredictor
 
 # rabbitmq connection
-rabbitmq_manager = RabbitMQManager()
-app.rabbitmq_manager = rabbitmq_manager
+if os.getenv('RUN_RABBITMQ', 'False') == 'True':
+    rabbitmq_manager = RabbitMQManager()
+    app.rabbitmq_manager = rabbitmq_manager
 
 # api registration
 api = Api(app)

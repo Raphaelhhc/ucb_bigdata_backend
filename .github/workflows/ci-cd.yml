@@ -25,6 +25,7 @@ jobs:
           pytest
         env:
           MONGODB_URI_TEST: ${{ secrets.MONGODB_URI_TEST }}
+          RUN_RABBITMQ: "False"
       - name: Deploy to Heroku
         run: |
           heroku git:remote -a hhcweather
