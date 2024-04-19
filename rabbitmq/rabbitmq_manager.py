@@ -2,20 +2,23 @@
 
 import pika
 import json
+import os
 from contextlib import contextmanager
 
+load_dotenv()
+
+rabbitmq_url = os.environ.get('CLOUDAMQP_URL', 'amqp://guest:guest@localhost:5672/')
+
 class RabbitMQManager:
-    def __init__(self, host='localhost'):
-        self.host = host
+    def __init__(self):
         self.connection = None
         self.channel = None
         self.setup_connection()
 
     def setup_connection(self):
         try:
-            self.connection = pika.BlockingConnection(
-                pika.ConnectionParameters(host=self.host)
-            )
+            params = pika.URLParameters(rabbitmq_url)
+            self.connection = pika.BlockingConnection(params)
             self.channel = self.connection.channel()
             self.channel.queue_declare(queue='queue_rainvolume', durable=True)
             self.channel.queue_declare(queue='queue_temperature', durable=True)

@@ -14,7 +14,7 @@ load_dotenv()
 mongodb_uri = os.environ.get('MONGODB_URI')
 db_name = 'WeatherPredictor'
 
-host = os.environ.get('RABBITMQ_HOST', 'localhost')
+rabbitmq_url = os.environ.get('CLOUDAMQP_URL', 'amqp://guest:guest@localhost:5672/')
 
 def save_rainvolume_to_db(document):
     client = MongoClient(mongodb_uri, tlsCAFile=certifi.where())
@@ -81,7 +81,8 @@ def callback_temperature(ch, method, properties, body):
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 def main():
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=host))
+    params = pika.URLParameters(rabbitmq_url)
+    connection = pika.BlockingConnection(params)
     channel = connection.channel()
 
     channel.queue_declare(queue='queue_rainvolume', durable=True)
