@@ -36,7 +36,8 @@ class TemperatureCollectorResource(MethodView):
         ]):
             abort(400, description="Missing necessary temperature data")
         try:
-            temp_collector.collect_temperatures()
+            temp_collector.sendtask_get_save_temperature()
+            temp_collector.collect_temperature_after_task_process()
             temp_collector.save_temperatures()
             temperature_lists = temp_collector.get_collect_temperatures()
         except Exception as e:

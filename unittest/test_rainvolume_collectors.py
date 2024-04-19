@@ -3,9 +3,18 @@
 import unittest
 from unittest.mock import patch, MagicMock
 from data_collector.rainvolume_collectors import RainVolumeCollector
+from app import app
+from flask import current_app
+import os
 
 class TestRainVolumeCollector(unittest.TestCase):
     def setUp(self):
+        self.app = app
+        self.app.config['TESTING'] = True
+        self.app.config['MONGODB_URI'] = os.environ.get('MONGODB_URI_TEST', 'mongodb://localhost:27017/testdb') 
+        self.app_context = self.app.app_context()
+        self.app_context.push()
+        
         self.collector = RainVolumeCollector(
             place="TestPlace",
             lat=34.05,
@@ -14,35 +23,26 @@ class TestRainVolumeCollector(unittest.TestCase):
             past_span=5
         )
     
-    @patch('data_collector.rainvolume_collectors.requests.get')
-    def test_get_rain_volume(self, mock_get):
-        mock_response = MagicMock()
-        mock_response.json.return_value = {
-            'daily': {'rain_sum': [0.0, 1.0, 0.5]}
-        }
-        mock_get.return_value = mock_response
-        result = self.collector.get_rain_volume(34.05, -118.25, 2023)
-        self.assertEqual(result, [0.0, 1.0, 0.5])
-        mock_get.assert_called_once_with(
-            'https://archive-api.open-meteo.com/v1/archive',
-            params={
-                'latitude': 34.05,
-                'longitude': -118.25,
-                'start_date': '2023-01-01',
-                'end_date': '2023-12-31',
-                'daily': 'rain_sum'
-            }
-        )
+    def tearDown(self):
+        self.app_context.pop()
     
-    @patch('data_collector.rainvolume_collectors.RainVolumeCollector.get_rain_volume')
-    def test_collect_rain_volumes(self, mock_get_rain_volume):
-        mock_get_rain_volume.side_effect = [
-            [0.0, 1.0], [0.5, 0.2], [0.3, 0.3], [0.1, 0.0], [0.2, 0.4]
-        ]
-        self.collector.collect_rain_volumes()
+    @patch('data_collector.rainvolume_collectors.current_app')
+    def test_sendtask_get_save_rain_volume(self, mock_app):
+        mock_manager = MagicMock()
+        mock_app.rabbitmq_manager = mock_manager
+        self.collector.sendtask_get_save_rain_volume()
+        self.assertEqual(mock_manager.send_task_to_queue.call_count, 5)
+
+    @patch('data_collector.rainvolume_collectors.current_app')
+    def test_collect_rain_volumes_after_task_process(self, mock_app):
+        mock_db = MagicMock()
+        mock_collection = MagicMock()
+        mock_app.db.rainvolume_eachyear = mock_collection
+        mock_collection.find_one.return_value = {'rain_volume': [0.0, 1.0]}
+        
+        self.collector.collect_rain_volumes_after_task_process()
         self.assertEqual(len(self.collector.rain_volume_lists), 5)
-        self.assertEqual(self.collector.rain_volume_lists[0], [0.0, 1.0])
-        self.assertEqual(self.collector.rain_volume_lists[1], [0.5, 0.2])
+        mock_collection.find_one.assert_called()
     
 
 if __name__ == '__main__':

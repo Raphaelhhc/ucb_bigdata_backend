@@ -3,7 +3,7 @@
 import pytest
 import os
 from app import app as flask_app
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from pymongo import MongoClient
 import certifi
 
@@ -19,20 +19,20 @@ def app():
 def client(app):
     return app.test_client()
 
-@patch('data_collector.temperature_collectors.TemperatureCollector.collect_temperatures')
-@patch('data_collector.temperature_collectors.TemperatureCollector.save_temperatures')
+@patch('data_collector.temperature_collectors.TemperatureCollector.sendtask_get_save_temperature')
+@patch('data_collector.temperature_collectors.TemperatureCollector.collect_temperature_after_task_process')
 @patch('data_collector.temperature_collectors.TemperatureCollector.get_collect_temperatures')
-def test_temperature_collector_post(mock_get_collect, mock_save, mock_collect, client):
-    mock_get_collect.return_value = [[25.0, 22.5, 30.0]]
+def test_temperature_collector_post(mock_get_collect_temperatures, mock_collect_temperature_after_task, mock_sendtask_get_save_temperature, client):
+    mock_get_collect_temperatures.return_value = [[25.0, 22.5, 30.0]]
     response = client.post('/temperaturecollector', json={
         'place': 'Test City', 'lat': 40.7128, 'lon': -74.0060, 'this_year': 2023, 'past_span': 5
     })
     assert response.status_code == 201
     assert response.get_json() == {'temperature_lists': [[25.0, 22.5, 30.0]]}
 
-    mock_collect.assert_called_once()
-    mock_save.assert_called_once()
-    mock_get_collect.assert_called_once()
+    mock_sendtask_get_save_temperature.assert_called_once()
+    mock_collect_temperature_after_task.assert_called_once()
+    mock_get_collect_temperatures.assert_called_once()
 
 @patch('data_analyzer.temperature_analyzer.TemperatureAnalyzer.calculate_temperature_probabilities')
 @patch('data_analyzer.temperature_analyzer.TemperatureAnalyzer.calculate_temperature_scores')

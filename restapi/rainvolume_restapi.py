@@ -36,10 +36,12 @@ class RainVolumeCollectorResource(MethodView):
         ]):
             abort(400, description="Missing necessary rain volume data")
         try:
-            rain_collector.collect_rain_volumes()
+            rain_collector.sendtask_get_save_rain_volume()
+            rain_collector.collect_rain_volumes_after_task_process()
             rain_collector.save_rain_volumes()
             rain_volume_lists = rain_collector.get_collect_rain_volumes()
         except Exception as e:
+            current_app.logger.error(f"Failed processing in /rainvolumecollector: {str(e)}")
             abort(500, description=f"An error occurred while saving the data: {e}")
         return {"rain_volume_lists": rain_volume_lists}
 

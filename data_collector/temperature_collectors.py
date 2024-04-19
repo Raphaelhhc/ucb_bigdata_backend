@@ -1,9 +1,11 @@
 # data_collector/temperature_collectors.py
 
 import requests
+import json
 from typing import List, Any
 from dataclasses import asdict
 from flask import current_app
+import time
 
 from model.temperature_models import Temperature
 
@@ -22,25 +24,34 @@ class TemperatureCollector:
         self.this_year: int = this_year
         self.past_span: int = past_span
         self.temperature_lists: List[List[float]] = []
-
-    def get_temperature(self, lat: float, lon: float, year: int) -> List[float]:
-        url: str = "https://archive-api.open-meteo.com/v1/archive"
-        params: dict = {
-            "latitude": lat,
-            "longitude": lon,
-            "start_date": f"{year}-01-01",
-            "end_date": f"{year}-12-31",
-            "daily": "apparent_temperature_mean"
-        }
-        response: Any = requests.get(url, params=params)
-        data: dict = response.json()
-        temperature: List[float] = data['daily']['apparent_temperature_mean']
-        return temperature
     
-    def collect_temperatures(self) -> None:
+    def sendtask_get_save_temperature(self) -> None:
         for year in range(self.this_year - self.past_span, self.this_year):
-            temperature: List[float] = self.get_temperature(self.lat, self.lon, year)
-            self.temperature_lists.append(temperature)
+            task_data = {
+                "lat": self.lat,
+                "lon": self.lon,
+                "year": year
+            }
+            current_app.rabbitmq_manager.send_task_to_queue(task_data, "queue_temperature")
+    
+    def collect_temperature_after_task_process(self) -> None:
+        for year in range(self.this_year - self.past_span, self.this_year):
+            retries = 10
+            delay = 1
+            while retries > 0:
+                document = current_app.db.temperature_eachyear.find_one({
+                    "lat": self.lat,
+                    "lon": self.lon,
+                    "year": year
+                })
+                if document:
+                    self.temperature_lists.append(document['temperature'])
+                    break
+                else:
+                    time.sleep(delay)
+                    retries -= 1
+            if retries == 0:
+                print(f"Failed to get temperature data for year {year}")
     
     def get_collect_temperatures(self) -> List[List[float]]:
         return self.temperature_lists

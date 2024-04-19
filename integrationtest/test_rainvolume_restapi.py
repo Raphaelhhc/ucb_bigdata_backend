@@ -3,7 +3,7 @@
 import pytest
 import os
 from app import app as flask_app
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from pymongo import MongoClient
 import certifi
 
@@ -19,10 +19,10 @@ def app():
 def client(app):
     return app.test_client()
 
-@patch('data_collector.rainvolume_collectors.RainVolumeCollector.collect_rain_volumes')
-@patch('data_collector.rainvolume_collectors.RainVolumeCollector.save_rain_volumes')
+@patch('data_collector.rainvolume_collectors.RainVolumeCollector.sendtask_get_save_rain_volume')
+@patch('data_collector.rainvolume_collectors.RainVolumeCollector.collect_rain_volumes_after_task_process')
 @patch('data_collector.rainvolume_collectors.RainVolumeCollector.get_collect_rain_volumes')
-def test_rain_volume_collector_post(mock_get_collect, mock_save, mock_collect, client):
+def test_rain_volume_collector_post(mock_get_collect, mock_collect_after, mock_send_save, client):
     mock_get_collect.return_value = [[0.2, 0.3, 0.5]]
     response = client.post('/rainvolumecollector', json={
         'place': 'Test Place', 'lat': 34.05, 'lon': -118.25, 'this_year': 2023, 'past_span': 5
@@ -30,8 +30,8 @@ def test_rain_volume_collector_post(mock_get_collect, mock_save, mock_collect, c
     assert response.status_code == 201
     assert response.get_json() == {'rain_volume_lists': [[0.2, 0.3, 0.5]]}
 
-    mock_collect.assert_called_once()
-    mock_save.assert_called_once()
+    mock_send_save.assert_called_once()
+    mock_collect_after.assert_called_once()
     mock_get_collect.assert_called_once()
 
 @patch('data_analyzer.rainvolume_analyzer.RainVolumeAnalyzer.calculate_rain_volume_probabilities')

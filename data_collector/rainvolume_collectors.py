@@ -1,9 +1,11 @@
 # data_collector/rainvolume_collectors.py
 
 import requests
+import json
 from typing import List, Any
 from dataclasses import asdict
 from flask import current_app
+import time
 
 from model.rainvolume_models import RainVolume
 
@@ -22,25 +24,39 @@ class RainVolumeCollector:
         self.this_year: int = this_year
         self.past_span: int = past_span
         self.rain_volume_lists: List[List[float]] = []
-
-    def get_rain_volume(self, lat: float, lon: float, year: int) -> List[float]:
-        url: str = "https://archive-api.open-meteo.com/v1/archive"
-        params: dict = {
-            "latitude": lat,
-            "longitude": lon,
-            "start_date": f"{year}-01-01",
-            "end_date": f"{year}-12-31",
-            "daily": "rain_sum"
-        }
-        response: Any = requests.get(url, params=params)
-        data: dict = response.json()
-        rain_volume: List[float] = data['daily']['rain_sum']
-        return rain_volume
     
-    def collect_rain_volumes(self) -> None:
+    def sendtask_get_save_rain_volume(self) -> None:
+        print("in sendtask_get_save_rain_volume!")
         for year in range(self.this_year - self.past_span, self.this_year):
-            rain_volume: List[float] = self.get_rain_volume(self.lat, self.lon, year)
-            self.rain_volume_lists.append(rain_volume)
+            task_data = {
+                "lat": self.lat,
+                "lon": self.lon,
+                "year": year
+            }
+            print("task_data! : ", task_data)
+            current_app.rabbitmq_manager.send_task_to_queue(task_data, "queue_rainvolume")
+            print("send_task_to_queue!")
+    
+    def collect_rain_volumes_after_task_process(self) -> None:
+        print("in collect_rain_volumes_after_task_process!")
+        for year in range(self.this_year - self.past_span, self.this_year):
+            retries = 10
+            delay = 1
+            while retries > 0:
+                document = current_app.db.rainvolume_eachyear.find_one({
+                    "lat": self.lat,
+                    "lon": self.lon,
+                    "year": year
+                })
+                if document:
+                    self.rain_volume_lists.append(document['rain_volume'])
+                    break
+                else:
+                    time.sleep(delay)
+                    retries -= 1
+            if retries == 0:
+                print(f"Failed to get rain volume data for year {year}")
+        print("end of collect_rain_volumes_after_task_process!")
     
     def get_collect_rain_volumes(self) -> List[List[float]]:
         return self.rain_volume_lists
