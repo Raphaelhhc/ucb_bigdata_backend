@@ -27,9 +27,9 @@ jobs:
           MONGODB_URI_TEST: ${{ secrets.MONGODB_URI_TEST }}
           RUN_RABBITMQ: "False"
       - name: Deploy to Heroku
-        run: |
-          heroku git:remote -a hhcweather
-          git push heroku main
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: "hhcweather" # Replace with your Heroku app name
+          heroku_email: "raphaelhhc@gmail.com"
