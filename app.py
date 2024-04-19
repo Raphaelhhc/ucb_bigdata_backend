@@ -34,7 +34,7 @@ app.config['OPENAPI_SWAGGER_UI_URL'] = 'https://cdn.jsdelivr.net/npm/swagger-ui-
 app.db = MongoClient(app.config['MONGODB_URI'], tlsCAFile=certifi.where()).WeatherPredictor
 
 # rabbitmq connection
-rabbitmq_manager = RabbitMQManager(os.environ.get('RABBITMQ_HOST', 'localhost'))
+rabbitmq_manager = RabbitMQManager()
 app.rabbitmq_manager = rabbitmq_manager
 
 # api registration
