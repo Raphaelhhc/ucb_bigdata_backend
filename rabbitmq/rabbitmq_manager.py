@@ -32,6 +32,7 @@ class RabbitMQManager:
             raise Exception("RabbitMQ channel is not set up.")
         if not isinstance(task, str):
             task = json.dumps(task)
+        print("to send task to queue!: ", queue_name, task)
         self.channel.basic_publish(
             exchange='',
             routing_key=queue_name,
