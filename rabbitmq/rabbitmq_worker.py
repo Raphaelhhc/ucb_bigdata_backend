@@ -95,7 +95,7 @@ def main():
     channel.queue_declare(queue='queue_rainvolume', durable=True)
     channel.queue_declare(queue='queue_temperature', durable=True)
 
-    channel.basic_qos(prefetch_count=1)
+    channel.basic_qos(prefetch_count=3)
     channel.basic_consume(queue='queue_rainvolume', on_message_callback=callback_rainvolume)
     channel.basic_consume(queue='queue_temperature', on_message_callback=callback_temperature)
 
