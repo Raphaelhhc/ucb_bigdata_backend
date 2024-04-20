@@ -86,6 +86,8 @@ def callback_temperature(ch, method, properties, body):
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 def main():
+    print("Starting RabbitMQ worker")
+    
     params = pika.URLParameters(rabbitmq_url)
     connection = pika.BlockingConnection(params)
     channel = connection.channel()
