@@ -109,4 +109,4 @@ if __name__ == '__main__':
         print(f"Cannot connect to RabbitMQ: {e}")
         raise
     except KeyboardInterrupt:
-        print("Exiting...")
+        print("Exiting....")
