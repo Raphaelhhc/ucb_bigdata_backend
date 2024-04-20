@@ -29,7 +29,7 @@ class RainVolumeCollectorResource(MethodView):
             this_year=data.get('this_year'),
             past_span=data.get('past_span')
         )
-        print("rain collector ctreated!")
+        print("rain collector created!")
         if not all([
             rain_collector.place, 
             rain_collector.lat, 
