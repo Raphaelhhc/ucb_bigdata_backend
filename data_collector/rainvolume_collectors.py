@@ -26,19 +26,24 @@ class RainVolumeCollector:
         self.rain_volume_lists: List[List[float]] = []
     
     def sendtask_get_save_rain_volume(self) -> None:
+        print("in sendtask_get_save_rain_volume!")
         for year in range(self.this_year - self.past_span, self.this_year):
             task_data = {
                 "lat": self.lat,
                 "lon": self.lon,
                 "year": year
             }
+            print("send task to queue_rainvolume!: ", task_data)
             current_app.rabbitmq_manager.send_task_to_queue(task_data, "queue_rainvolume")
+            print("sendtask_get_save_rain_volume done!")
     
     def collect_rain_volumes_after_task_process(self) -> None:
+        print("in collect_rain_volumes_after_task_process!")
         for year in range(self.this_year - self.past_span, self.this_year):
             retries = 10
             delay = 1
             while retries > 0:
+                print("trying to get rain volume data!: ", year, retries )
                 document = current_app.db.rainvolume_eachyear.find_one({
                     "lat": self.lat,
                     "lon": self.lon,
