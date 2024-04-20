@@ -86,25 +86,26 @@ def callback_temperature(ch, method, properties, body):
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 def main():
-    params = pika.URLParameters(rabbitmq_url)
-    connection = pika.BlockingConnection(params)
-    channel = connection.channel()
+    while True:
+        try:
+            params = pika.URLParameters(rabbitmq_url)
+            connection = pika.BlockingConnection(params)
+            channel = connection.channel()
 
-    channel.queue_declare(queue='queue_rainvolume', durable=True)
-    channel.queue_declare(queue='queue_temperature', durable=True)
+            channel.queue_declare(queue='queue_rainvolume', durable=True)
+            channel.queue_declare(queue='queue_temperature', durable=True)
 
-    channel.basic_qos(prefetch_count=1)
-    channel.basic_consume(queue='queue_rainvolume', on_message_callback=callback_rainvolume)
-    channel.basic_consume(queue='queue_temperature', on_message_callback=callback_temperature)
+            channel.basic_qos(prefetch_count=1)
+            channel.basic_consume(queue='queue_rainvolume', on_message_callback=callback_rainvolume)
+            channel.basic_consume(queue='queue_temperature', on_message_callback=callback_temperature)
 
-    try:
-        print(' [*] Waiting for messages. To exit press CTRL+C')
-        channel.start_consuming()
-    except KeyboardInterrupt:
-        print('Interrupted')
-        channel.stop_consuming()
-    finally:
-        connection.close()
+            print(' [*] Waiting for messages. To exit press CTRL+C')
+            channel.start_consuming()
+        except KeyboardInterrupt:
+            break
+        except pika.exceptions.AMQPConnectionError:
+            print("Connection was closed, retrying...")
+            time.sleep(10)
 
 if __name__ == '__main__':
     main()
