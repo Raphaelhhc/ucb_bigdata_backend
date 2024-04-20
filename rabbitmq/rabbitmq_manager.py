@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-rabbitmq_url = os.environ.get('CLOUDAMQP_URL', 'amqp://guest:guest@localhost:5672/')
+rabbitmq_url = os.environ.get('CLOUDAMQP_URL', 'amqp://guest:guest@localhost:5672/%2f')
 
 class RabbitMQManager:
     def __init__(self):

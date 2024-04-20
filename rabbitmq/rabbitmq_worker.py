@@ -14,7 +14,7 @@ load_dotenv()
 mongodb_uri = os.environ.get('MONGODB_URI')
 db_name = 'WeatherPredictor'
 
-rabbitmq_url = os.environ.get('CLOUDAMQP_URL', 'amqp://guest:guest@localhost:5672/')
+rabbitmq_url = os.environ.get('CLOUDAMQP_URL', 'amqp://guest:guest@localhost:5672/%2f')
 
 def save_rainvolume_to_db(document):
     print("in save_rainvolume_to_db!")
