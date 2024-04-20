@@ -97,15 +97,14 @@ def main():
     channel.basic_consume(queue='queue_rainvolume', on_message_callback=callback_rainvolume)
     channel.basic_consume(queue='queue_temperature', on_message_callback=callback_temperature)
 
-    try:
-        print(' [*] Waiting for messages. To exit press CTRL+C')
-        channel.start_consuming()
-    except KeyboardInterrupt:
-        print('Interrupted')
-        channel.stop_consuming()
-    finally:
-        print("Closing connection")
-        connection.close()
+    print(' [*] Waiting for messages. To exit press CTRL+C')
+    channel.start_consuming()
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except pika.exceptions.AMQPConnectionError as e:
+        print(f"Cannot connect to RabbitMQ: {e}")
+        raise
+    except KeyboardInterrupt:
+        print("Exiting...")
