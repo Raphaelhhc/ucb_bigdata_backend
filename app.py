@@ -52,4 +52,3 @@ api.register_blueprint(blp_recommend)
 
 if __name__ == '__main__':
     app.run(debug=True)
-    rabbitmq_manager.close()
