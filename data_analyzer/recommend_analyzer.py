@@ -32,6 +32,7 @@ class RecommendAnalyzer:
         self.recommend_date: List[tuple] = []
         self.recommend_date_probability: List[List[Dict[str, float]]] = []
     
+    # calculate the overall score of each day based on the sum of the score of rain volume and the score of temperature
     def recommend_index(self) -> List[int]:
         scores: List[float] = [score for _, score in self.overall_scores]
         deviation: float = np.std(scores)
@@ -45,6 +46,7 @@ class RecommendAnalyzer:
             recommend_index.append(i)
         return recommend_index
     
+    # group the recommend index into groups
     def group_recommend_index(self, recommend_index: List[int]) -> List[List[int]]:
         sorted_recommend_index: List[int] = sorted(recommend_index)
         recommend_index_groups: List[List[int]] = [[sorted_recommend_index[0]]]
@@ -55,6 +57,7 @@ class RecommendAnalyzer:
                 recommend_index_groups.append([index])
         return recommend_index_groups
 
+    # calculate the recommended date based on the recommend index
     def calculate_recommend_date(self) -> None: 
         recommend_index = self.recommend_index()
         recommend_index_groups = self.group_recommend_index(recommend_index)
@@ -76,12 +79,15 @@ class RecommendAnalyzer:
             temperature_probability_dict_end = self.temperature_probabilities[str(end_day_index - self.day_span)]
             self.recommend_date_probability.append([rain_probability_dict_start, temperature_probability_dict_start, rain_probability_dict_end, temperature_probability_dict_end])
     
+    # return the recommended date
     def get_recommend_date(self) -> List[tuple]:
         return self.recommend_date
     
+    # return the probability of each rain volume and temperature scene for the recommended date
     def get_recommend_date_probability(self) -> List[List[Dict[str, float]]]:
         return self.recommend_date_probability
     
+    # save the recommended date to the database
     def save_recommend_date(self) -> None:
         recommenddate = RecommendDate(
             place=self.place,

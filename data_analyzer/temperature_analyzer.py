@@ -24,6 +24,7 @@ class TemperatureAnalyzer:
         self.temperature_probabilities: Dict[str, Dict[str, float]] = {}
         self.temperature_scores: List[tuple] = []
     
+    # calculate the probability of each temperature scene for each day
     def calculate_temperature_probabilities(self) -> None:
         for i in range(DAYS_OF_YEAR - self.day_span):
             counter: Dict[str, int] = {scene: 0 for scene in TEMPERATURE_SCENES.keys()}
@@ -37,6 +38,7 @@ class TemperatureAnalyzer:
             probability: Dict[str, float] = {scene: count / (self.day_span * self.past_span) for scene, count in counter.items()}
             self.temperature_probabilities[str(i)] = probability
     
+    # calculate the score of each day based on the probability of each temperature scene
     def calculate_temperature_scores(self) -> None:
         for i in range(DAYS_OF_YEAR - self.day_span):
             score: float = 0
@@ -44,12 +46,15 @@ class TemperatureAnalyzer:
                 score += TEMPERATURE_SCENES_WEIGHT[scene] * probability
             self.temperature_scores.append((i, score))
     
+    # return the probability of each temperature scene for each day
     def get_temperature_probabilities(self) -> Dict[str, Dict[str, float]]:
         return self.temperature_probabilities
     
+    # return the score of each day based on the probability of each temperature scene
     def get_temperature_scores(self) -> List[tuple]:
         return self.temperature_scores
     
+    # save the probability of each temperature scene for each day to the database
     def save_temperature_probabilities(self) -> None:
         temperature_probability = TemperatureProbability(
             place=self.place,
@@ -63,6 +68,7 @@ class TemperatureAnalyzer:
         except Exception as e:
             print(f"An database storage error occurred: {e}")
     
+    # save the score of each day based on the probability of each temperature scene to the database
     def save_temperature_scores(self) -> None:
         temperature_score = TemperatureScore(
             place=self.place,

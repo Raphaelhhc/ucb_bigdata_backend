@@ -24,6 +24,7 @@ class RainVolumeAnalyzer:
         self.rain_volume_probabilities: Dict[str, Dict[str, float]] = {}
         self.rain_volume_scores: List[tuple] = []
     
+    # calculate the probability of each rain volume scene for each day
     def calculate_rain_volume_probabilities(self) -> None:
         for i in range(DAYS_OF_YEAR - self.day_span):
             counter: Dict[str, int] = {scene: 0 for scene in RAIN_SCENES.keys()}
@@ -37,6 +38,7 @@ class RainVolumeAnalyzer:
             probability: Dict[str, float] = {scene: count / (self.day_span * self.past_span) for scene, count in counter.items()}
             self.rain_volume_probabilities[str(i)] = probability
     
+    # calculate the score of each day based on the probability of each rain volume scene
     def calculate_rain_volume_scores(self) -> None:
         for i in range(DAYS_OF_YEAR - self.day_span):
             score: float = 0
@@ -44,12 +46,15 @@ class RainVolumeAnalyzer:
                 score += RAIN_SCENES_WEIGHT[scene] * probability
             self.rain_volume_scores.append((i, score))
     
+    # return the probability of each rain volume scene for each day
     def get_rain_volume_probabilities(self) -> Dict[str, Dict[str, float]]:
         return self.rain_volume_probabilities
     
+    # return the score of each day based on the probability of each rain volume scene
     def get_rain_volume_scores(self) -> List[tuple]:
         return self.rain_volume_scores
     
+    # save the probability of each rain volume scene for each day to the database
     def save_rain_volume_probabilities(self) -> None:
         rain_volume_probability = RainVolumeProbability(
             place=self.place,
@@ -63,6 +68,7 @@ class RainVolumeAnalyzer:
         except Exception as e:
             print(f"An database storage error occurred: {e}")
     
+    # save the score of each day based on the probability of each rain volume scene to the database
     def save_rain_volume_scores(self) -> None:
         rain_volume_score = RainVolumeScore(
             place=self.place,

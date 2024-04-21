@@ -17,8 +17,9 @@ class RabbitMQManager:
         self.setup_connection()
 
     def setup_connection(self):
+        params = pika.URLParameters(rabbitmq_url)
+        params.heartbeat = 600
         try:
-            params = pika.URLParameters(rabbitmq_url)
             self.connection = pika.BlockingConnection(params)
             self.channel = self.connection.channel()
             self.channel.queue_declare(queue='queue_rainvolume', durable=True)
@@ -26,10 +27,14 @@ class RabbitMQManager:
         except pika.exceptions.AMQPConnectionError as e:
             print(f"Cannot connect to RabbitMQ: {e}")
             raise
-
+    
+    def ensure_connection(self):
+        if not self.connection or self.connection.is_closed:
+            print("Reconnecting to RabbitMQ...")
+            self.setup_connection()
+    
     def send_task_to_queue(self, task, queue_name):
-        if not self.channel:
-            raise Exception("RabbitMQ channel is not set up.")
+        self.ensure_connection()
         if not isinstance(task, str):
             task = json.dumps(task)
         print("to send task to queue!: ", queue_name, task)
@@ -42,13 +47,6 @@ class RabbitMQManager:
                 content_type='application/json', 
             ))
         print(f" [x] Sent task to {queue_name}")
-
-    @contextmanager
-    def get_channel(self):
-        if not self.connection or self.connection.is_closed:
-            self.setup_connection()
-        yield self.channel
-        self.connection.close()
 
     def close(self):
         if self.connection:

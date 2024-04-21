@@ -17,12 +17,9 @@ db_name = 'WeatherPredictor'
 rabbitmq_url = os.environ.get('CLOUDAMQP_URL', 'amqp://guest:guest@localhost:5672/%2f')
 
 def save_rainvolume_to_db(document):
-    print("in save_rainvolume_to_db!")
     client = MongoClient(mongodb_uri, tlsCAFile=certifi.where())
     db = client[db_name]
-    print("to save rain volume data to db!")
     db.rainvolume_eachyear.insert_one(document)
-    print("rain volume data saved to db!")
     client.close()
     
 def save_temperature_to_db(document):
@@ -42,7 +39,6 @@ def process_rainvolume_data(data):
         "daily": "rain_sum"
     }
     response = requests.get(url, params=params)
-    print("received response from open-meteo api")
     rain_volume = response.json()['daily']['rain_sum']
     document = {
         'lat': data.get('lat'),
@@ -50,7 +46,6 @@ def process_rainvolume_data(data):
         'year': data.get('year'),
         'rain_volume': rain_volume
     }
-    print("to call save_rainvolume_to_db!")
     save_rainvolume_to_db(document)
 
 def process_temperature_data(data):

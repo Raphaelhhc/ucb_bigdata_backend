@@ -12,6 +12,7 @@ from data_analyzer.temperature_analyzer import TemperatureAnalyzer
 blp_temperaturecollector = Blueprint('temperaturecollector', 'temperaturecollector', description='Operations on temperaturecollector')
 blp_temperatureanalyzer = Blueprint('temperatureanalyzer', 'temperatureanalyzer', description='Operations on temperatureanalyzer')
 
+# api for temperature data collection
 @blp_temperaturecollector.route('/temperaturecollector')
 class TemperatureCollectorResource(MethodView):
     
@@ -44,6 +45,7 @@ class TemperatureCollectorResource(MethodView):
             abort(500, description=f"An error occurred while saving the data: {e}")
         return {"temperature_lists": temperature_lists}
 
+# api for temperature data analysis
 @blp_temperatureanalyzer.route('/temperatureanalyzer')
 class TemperatureAnalyzerResource(MethodView):
         

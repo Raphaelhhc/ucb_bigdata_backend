@@ -25,6 +25,7 @@ class TemperatureCollector:
         self.past_span: int = past_span
         self.temperature_lists: List[List[float]] = []
     
+    # send task to rabbitmq to get and save temperature data
     def sendtask_get_save_temperature(self) -> None:
         for year in range(self.this_year - self.past_span, self.this_year):
             task_data = {
@@ -34,6 +35,7 @@ class TemperatureCollector:
             }
             current_app.rabbitmq_manager.send_task_to_queue(task_data, "queue_temperature")
     
+    # collect temperature data after the rabbitmq task process
     def collect_temperature_after_task_process(self) -> None:
         for year in range(self.this_year - self.past_span, self.this_year):
             retries = 10
@@ -53,9 +55,11 @@ class TemperatureCollector:
             if retries == 0:
                 print(f"Failed to get temperature data for year {year}")
     
+    # return the collected temperature data
     def get_collect_temperatures(self) -> List[List[float]]:
         return self.temperature_lists
     
+    # save the collected temperature data to the database
     def save_temperatures(self) -> None:
         temperature = Temperature(
             place=self.place,
